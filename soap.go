@@ -119,12 +119,12 @@ func (c *Client) waitAndRefreshDefinitions(d time.Duration) {
 		time.Sleep(d)
 		c.onRequest.Wait()
 		c.onDefinitionsRefresh.Add(1)
-		c.initWsdl()
+		c.InitWsdl()
 		c.onDefinitionsRefresh.Done()
 	}
 }
 
-func (c *Client) initWsdl() {
+func (c *Client) InitWsdl() {
 	c.Definitions, c.definitionsErr = getWsdlDefinitions(c.wsdl, c.HTTPClient)
 	if c.definitionsErr == nil {
 		c.URL = strings.TrimSuffix(c.Definitions.TargetNamespace, "/")
@@ -140,7 +140,7 @@ func (c *Client) SetWSDL(wsdl string) {
 	defer c.onRequest.Done()
 	defer c.onDefinitionsRefresh.Done()
 	c.wsdl = wsdl
-	c.initWsdl()
+	c.InitWsdl()
 }
 
 // Do Process Soap Request
@@ -150,7 +150,7 @@ func (c *Client) Do(req *Request) (res *Response, err error) {
 	defer c.onRequest.Done()
 
 	c.once.Do(func() {
-		c.initWsdl()
+		c.InitWsdl()
 		// 15 minute to prevent abuse.
 		if c.RefreshDefinitionsAfter >= 15*time.Minute {
 			go c.waitAndRefreshDefinitions(c.RefreshDefinitionsAfter)
